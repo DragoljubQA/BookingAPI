@@ -149,8 +149,8 @@ public class ApiTests {
         Assert.assertEquals(jp.get("additionalneeds"), payload.getAdditionalneeds());
     }
 
-    @Test
-    public void bookingCanBeUpdate() {
+    @Test(priority = 70)
+    public void bookingCanBeUpdated() {
         //Create booking
         bookingDates.setCheckin("2023-10-10");
         bookingDates.setCheckout("2023-11-10");
