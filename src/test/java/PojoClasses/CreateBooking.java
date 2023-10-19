@@ -7,7 +7,7 @@ public class CreateBooking {
     private String lastname;
     private int totalprice;
     private boolean depositpaid;
-    private List<BookingDates> bookingdates;
+    private Object bookingdates;
     private String additionalneeds;
 
     public String getFirstname() {
@@ -42,11 +42,11 @@ public class CreateBooking {
         this.depositpaid = depositpaid;
     }
 
-    public List<BookingDates> getBookingdates() {
+    public Object getBookingdates() {
         return bookingdates;
     }
 
-    public void setBookingdates(List<BookingDates> bookingdates) {
+    public void setBookingdates(Object bookingdates) {
         this.bookingdates = bookingdates;
     }
 
@@ -56,5 +56,9 @@ public class CreateBooking {
 
     public void setAdditionalneeds(String additionalneeds) {
         this.additionalneeds = additionalneeds;
+    }
+
+    public void setDefaultPayload() {
+
     }
 }
