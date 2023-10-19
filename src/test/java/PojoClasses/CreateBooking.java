@@ -1,6 +1,9 @@
 package PojoClasses;
 
-import java.util.List;
+import com.github.javafaker.Faker;
+import org.testng.annotations.Test;
+
+import java.util.concurrent.TimeUnit;
 
 public class CreateBooking {
     private String firstname;
@@ -9,6 +12,7 @@ public class CreateBooking {
     private boolean depositpaid;
     private Object bookingdates;
     private String additionalneeds;
+    static Faker faker = new Faker();
 
     public String getFirstname() {
         return firstname;
@@ -58,7 +62,23 @@ public class CreateBooking {
         this.additionalneeds = additionalneeds;
     }
 
-    public void setDefaultPayload() {
+    public static Object setRandomPayload() {
+        BookingDates bookingDates = new BookingDates();
+        CreateBooking payload = new CreateBooking();
+        bookingDates.setCheckin(String.valueOf(faker.date().future(1, TimeUnit.DAYS)));
+        bookingDates.setCheckout(String.valueOf(faker.date().future(1, TimeUnit.DAYS)));
+        payload.setFirstname(faker.name().firstName());
+        payload.setLastname(faker.name().lastName());
+        payload.setTotalprice(faker.number().numberBetween(100, 1000));
+        payload.setDepositpaid(faker.bool().bool());
+        payload.setBookingdates(bookingDates);
+        payload.setAdditionalneeds(faker.food().dish());
+        return payload;
+    }
 
+    @Test
+    public void test() {
+        System.out.println(faker.date().future(1, TimeUnit.DAYS));
+        System.out.println(faker.date().future(2, TimeUnit.DAYS));
     }
 }
