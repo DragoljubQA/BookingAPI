@@ -1,8 +1,6 @@
 package PojoClasses;
 
 import com.github.javafaker.Faker;
-import org.testng.annotations.Test;
-
 import java.util.concurrent.TimeUnit;
 
 public class CreateBooking {
@@ -34,7 +32,7 @@ public class CreateBooking {
         return totalprice;
     }
 
-    public void setTotalprice(int totalprice) {
+    public void setTotalprice(Integer totalprice) {
         this.totalprice = totalprice;
     }
 
@@ -42,7 +40,7 @@ public class CreateBooking {
         return depositpaid;
     }
 
-    public void setDepositpaid(boolean depositpaid) {
+    public void setDepositpaid(Boolean depositpaid) {
         this.depositpaid = depositpaid;
     }
 

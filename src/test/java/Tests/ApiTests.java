@@ -10,6 +10,10 @@ import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+
 import static io.restassured.RestAssured.given;
 
 public class ApiTests {
@@ -404,6 +408,56 @@ public class ApiTests {
                 .extract().response().asString();
 
          Assert.assertEquals(response, "Not Found");
+    }
+
+    @Test(priority = 100)
+    public void invalidPathParameterCantBeFound() {
+        String response = given()
+                .log().all()
+                .header("Content-Type", "application/json")
+                .when()
+                .get("invalid")
+                .then()
+                .log().all()
+                .statusCode(404)
+                .extract().response().asString();
+
+        Assert.assertEquals(response, "Not Found");
+    }
+
+    @Test(priority = 110)
+    public void verifyMandatoryFieldsInBody() throws IOException {
+        for (int i = 1; i <= 6; i++) {
+            String response = given()
+                    .log().all()
+                    .header("Content-Type", "application/json")
+                    .body(new String(Files.readAllBytes(Paths.get("JSONfiles\\Case"+i+".json"))))
+                    .when()
+                    .post(bookingParam)
+                    .then()
+                    .statusCode(500)
+                    .log().all()
+                    .extract().response().asString();
+
+            Assert.assertEquals(response, "Internal Server Error");
+        }
+    }
+
+    @Test(priority = 130)
+    public void verifyAdditionalNeedsIsNotMandatory() throws IOException {
+        String response = given()
+                .log().all()
+                .header("Content-Type", "application/json")
+                .body(new String(Files.readAllBytes(Paths.get("JSONfiles\\Case7.json"))))
+                .when()
+                .post(bookingParam)
+                .then()
+                .statusCode(200)
+                .log().all()
+                .extract().response().asString();
+
+        JsonPath jp = new JsonPath(response);
+        Assert.assertEquals((String) jp.get("additionalneeds"), null);
     }
 
 
