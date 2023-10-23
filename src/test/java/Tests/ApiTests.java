@@ -7,6 +7,8 @@ import PojoClasses.Variables;
 import io.restassured.RestAssured;
 import io.restassured.path.json.JsonPath;
 import org.testng.Assert;
+import org.testng.ITestResult;
+import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
@@ -34,6 +36,24 @@ public class ApiTests {
         bookingParam = "booking";
         tokenParam = "auth";
         createToken();
+    }
+
+    @AfterMethod
+    public void log(ITestResult result) {
+        System.out.println("TEST: " + result.getName() + " FINISHED");
+        switch (result.getStatus()) {
+            case 1:
+                System.out.println("RESULT: SUCCESS");
+                break;
+            case 2:
+                System.out.println("RESULT: FAILED");
+                break;
+            case 3:
+                System.out.println("RESULT: SKIPPED");
+                break;
+            default:
+                System.out.println("RESULT: UNKNOWN");
+        }
     }
 
     public void createToken() {
