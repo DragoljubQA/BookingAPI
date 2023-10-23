@@ -18,7 +18,9 @@ public class ApiTests {
     String tokenParam;
     Variables variables;
     CreateBooking payload = new CreateBooking();
+    CreateBooking updatePayload = new CreateBooking();
     BookingDates bookingDates = new BookingDates();
+    BookingDates updateBookingDates = new BookingDates();
     CreateToken createToken = new CreateToken();
     @BeforeClass
     public void setUp() {
@@ -151,7 +153,9 @@ public class ApiTests {
 
     @Test(priority = 70)
     public void bookingCanBeUpdated() {
+
         //Create booking
+
         bookingDates.setCheckin("2023-10-10");
         bookingDates.setCheckout("2023-11-10");
         payload.setFirstname("Dragoljub");
@@ -198,20 +202,20 @@ public class ApiTests {
 
         //Create update for the same booking
 
-        bookingDates.setCheckin("2023-12-12");
-        bookingDates.setCheckout("2023-12-15");
-        payload.setFirstname("John");
-        payload.setLastname("Smith");
-        payload.setTotalprice(310);
-        payload.setDepositpaid(false);
-        payload.setBookingdates(bookingDates);
-        payload.setAdditionalneeds("Lunch");
+        updateBookingDates.setCheckin("2023-12-12");
+        updateBookingDates.setCheckout("2023-12-15");
+        updatePayload.setFirstname("John");
+        updatePayload.setLastname("Smith");
+        updatePayload.setTotalprice(310);
+        updatePayload.setDepositpaid(false);
+        updatePayload.setBookingdates(updateBookingDates);
+        updatePayload.setAdditionalneeds("Lunch");
 
         given()
                 .log().all()
                 .header("Content-Type", "application/json")
                 .header("Cookie", "token="+variables.getToken())
-                .body(payload)
+                .body(updatePayload)
                 .when()
                 .put(bookingParam+"/"+variables.getBookingid())
                 .then()
@@ -219,6 +223,56 @@ public class ApiTests {
                 .log().all();
 
         //Read booking again to verify changes
+
+        response = given()
+                .log().all()
+                .header("Content-Type", "application/json")
+                .when()
+                .get(bookingParam+"/"+variables.getBookingid())
+                .then()
+                .statusCode(200)
+                .log().all()
+                .extract().response().asString();
+
+        jp = new JsonPath(response);
+        Assert.assertEquals(jp.get("firstname"), updatePayload.getFirstname());
+        Assert.assertEquals(jp.get("lastname"), updatePayload.getLastname());
+        Assert.assertEquals(jp.get("totalprice").toString(), String.valueOf(updatePayload.getTotalprice()));
+        Assert.assertEquals(jp.get("depositpaid"), updatePayload.isDepositpaid());
+        Assert.assertEquals(jp.get("bookingdates.checkin"), updateBookingDates.getCheckin());
+        Assert.assertEquals(jp.get("bookingdates.checkout"), updateBookingDates.getCheckout());
+        Assert.assertEquals(jp.get("additionalneeds"), updatePayload.getAdditionalneeds());
+    }
+
+    @Test(priority = 80)
+    public void bookingCanBePartiallyUpdated() {
+
+        //Create booking
+
+        bookingDates.setCheckin("2023-10-10");
+        bookingDates.setCheckout("2023-11-10");
+        payload.setFirstname("Dragoljub");
+        payload.setLastname("Boranijasevic");
+        payload.setTotalprice(200);
+        payload.setDepositpaid(true);
+        payload.setBookingdates(bookingDates);
+        payload.setAdditionalneeds("Dinner");
+
+        String response = given()
+                .log().all()
+                .header("Content-Type", "application/json")
+                .body(payload)
+                .when()
+                .post(bookingParam)
+                .then()
+                .statusCode(200)
+                .log().all()
+                .extract().response().asString();
+
+        JsonPath jp = new JsonPath(response);
+        variables.setBookingid(jp.get("bookingid"));
+
+        //Read booking
 
         response = given()
                 .log().all()
@@ -239,10 +293,118 @@ public class ApiTests {
         Assert.assertEquals(jp.get("bookingdates.checkout"), bookingDates.getCheckout());
         Assert.assertEquals(jp.get("additionalneeds"), payload.getAdditionalneeds());
 
+        //Create update for the same booking
+
+        updatePayload.setTotalprice(310);
+        updatePayload.setDepositpaid(false);
+        updatePayload.setAdditionalneeds("Lunch");
+
+        given()
+                .log().all()
+                .header("Content-Type", "application/json")
+                .header("Cookie", "token="+variables.getToken())
+                .body(updatePayload)
+                .when()
+                .patch(bookingParam+"/"+variables.getBookingid())
+                .then()
+                .statusCode(200)
+                .log().all();
+
+        //Read booking again to verify changes
+
+        response = given()
+                .log().all()
+                .header("Content-Type", "application/json")
+                .when()
+                .get(bookingParam+"/"+variables.getBookingid())
+                .then()
+                .statusCode(200)
+                .log().all()
+                .extract().response().asString();
+
+        jp = new JsonPath(response);
+        Assert.assertEquals(jp.get("totalprice").toString(), String.valueOf(updatePayload.getTotalprice()));
+        Assert.assertEquals(jp.get("depositpaid"), updatePayload.isDepositpaid());
+        Assert.assertEquals(jp.get("additionalneeds"), updatePayload.getAdditionalneeds());
 
     }
 
+    @Test(priority = 90)
+    public void bookingCanBeRemoved() {
 
+        //Create booking
+
+        bookingDates.setCheckin("2023-10-10");
+        bookingDates.setCheckout("2023-11-10");
+        payload.setFirstname("Dragoljub");
+        payload.setLastname("Boranijasevic");
+        payload.setTotalprice(200);
+        payload.setDepositpaid(true);
+        payload.setBookingdates(bookingDates);
+        payload.setAdditionalneeds("Dinner");
+
+        String response = given()
+                .log().all()
+                .header("Content-Type", "application/json")
+                .body(payload)
+                .when()
+                .post(bookingParam)
+                .then()
+                .statusCode(200)
+                .log().all()
+                .extract().response().asString();
+
+        JsonPath jp = new JsonPath(response);
+        variables.setBookingid(jp.get("bookingid"));
+
+        //Read booking
+
+        response = given()
+                .log().all()
+                .header("Content-Type", "application/json")
+                .when()
+                .get(bookingParam+"/"+variables.getBookingid())
+                .then()
+                .statusCode(200)
+                .log().all()
+                .extract().response().asString();
+
+        jp = new JsonPath(response);
+        Assert.assertEquals(jp.get("firstname"), payload.getFirstname());
+        Assert.assertEquals(jp.get("lastname"), payload.getLastname());
+        Assert.assertEquals(jp.get("totalprice").toString(), String.valueOf(payload.getTotalprice()));
+        Assert.assertEquals(jp.get("depositpaid"), payload.isDepositpaid());
+        Assert.assertEquals(jp.get("bookingdates.checkin"), bookingDates.getCheckin());
+        Assert.assertEquals(jp.get("bookingdates.checkout"), bookingDates.getCheckout());
+        Assert.assertEquals(jp.get("additionalneeds"), payload.getAdditionalneeds());
+
+        // Remove booking
+
+        given()
+                .log().all()
+                .header("Content-Type", "application/json")
+                .header("Cookie", "token=" + variables.getToken())
+                .when()
+                .delete(bookingParam+"/"+variables.getBookingid())
+                .then()
+                .statusCode(201)
+                .log().all()
+                .extract().response().asString();
+
+        // Read booking after removing
+
+         response = given()
+                .log().all()
+                .header("Content-Type", "application/json")
+                .when()
+                .get(bookingParam+"/"+variables.getBookingid())
+                .then()
+                .statusCode(404)
+                .log().all()
+                .extract().response().asString();
+
+         Assert.assertEquals(response, "Not Found");
+    }
 
 
 
